@@ -3092,3 +3092,929 @@ class WxPayBizPayUrl extends WxPayDataBaseSignMd5
 	}
 }
 
+/**
+ * 微信红包回调回包数据基类
+ **/
+class WxPayRedPackResults extends WxPayResults
+{
+    /**
+     * 将xml转为array
+     * @param WxPayConfigInterface $config  配置对象
+     * @param string $xml
+     * @return bool|array
+     * @throws WxPayException
+     */
+    public static function Init($config, $xml)
+    {
+        $obj = new self();
+        $obj->FromXml($xml);
+        //失败则直接返回失败
+        if($obj->values['return_code'] != 'SUCCESS') {
+            foreach ($obj->values as $key => $value) {
+                #除了return_code和return_msg之外其他的参数存在，则报错
+                if($key != "return_code" && $key != "return_msg"){
+                    throw new WxPayException("输入数据存在异常！");
+                }
+            }
+            return $obj->GetValues();
+        }
+        return $obj->GetValues();
+    }
+}
+
+/**
+ * 微信红包
+ */
+class WxPayRedPack extends WxPayDataBase
+{
+
+    /**
+     * 设置微信分配的公众账号ID
+     * @param string $value
+     **/
+    public function SetWxappid($value)
+    {
+        $this->values['wxappid'] = $value;
+    }
+
+    /**
+     * 获取微信分配的公众账号ID的值
+     * @return
+     **/
+    public function GetWxappid()
+    {
+        return $this->values['wxappid'];
+    }
+
+    /**
+     * 判断微信分配的公众账号ID是否存在
+     * @return boolean
+     **/
+    public function IsWxappidSet()
+    {
+        return array_key_exists('wxappid', $this->values);
+    }
+
+
+    /**
+     * 设置微信支付分配的商户号
+     * @param string $value
+     **/
+    public function SetMch_id($value)
+    {
+        $this->values['mch_id'] = $value;
+    }
+
+    /**
+     * 获取微信支付分配的商户号的值
+     * @return
+     **/
+    public function GetMch_id()
+    {
+        return $this->values['mch_id'];
+    }
+
+    /**
+     * 判断微信支付分配的商户号是否存在
+     * @return bool
+     **/
+    public function IsMch_idSet()
+    {
+        return array_key_exists('mch_id', $this->values);
+    }
+
+    /**
+     * 设置随机字符串
+     * @param string $value
+     **/
+    public function SetNonce_str($value)
+    {
+        $this->values['nonce_str'] = $value;
+    }
+
+    /**
+     * 获取随机字符串的值
+     * @return
+     **/
+    public function GetNonce_str()
+    {
+        return $this->values['nonce_str'];
+    }
+
+    /**
+     * 判断随机字符串是否存在
+     * @return bool
+     **/
+    public function IsNonce_strSet()
+    {
+        return array_key_exists('nonce_str', $this->values);
+    }
+
+    /**
+     * 设置发起接口调用时的机器IP
+     * @param string $value
+     **/
+    public function SetClient_ip($value)
+    {
+        $this->values['client_ip'] = $value;
+    }
+
+    /**
+     * 获取发起接口调用时的机器IP 的值
+     * @return
+     **/
+    public function GetClient_ip()
+    {
+        return $this->values['client_ip'];
+    }
+
+    /**
+     * 判断发起接口调用时的机器IP 是否存在
+     * @return true 或 false
+     **/
+    public function IsClient_ipSet()
+    {
+        return array_key_exists('client_ip', $this->values);
+    }
+
+    /**
+     * 设置接受红包的用户openid
+     * @param string $value
+     **/
+    public function SetRe_openid($value)
+    {
+        $this->values['re_openid'] = $value;
+    }
+
+    /**
+     * 获取接受红包的用户openid
+     * @return
+     **/
+    public function GetRe_openid()
+    {
+        return $this->values['re_openid'];
+    }
+
+    /**
+     * 判断接受红包的用户openid 是否存在
+     * @return true 或 false
+     **/
+    public function IsRe_openidSet()
+    {
+        return array_key_exists('re_openid', $this->values);
+    }
+
+    /**
+     * 设置红包发送者名称
+     * @param string $value
+     **/
+    public function SetSend_name($value)
+    {
+        $this->values['send_name'] = $value;
+    }
+
+    /**
+     * 获取红包发送者名称
+     * @return
+     **/
+    public function GetSend_name()
+    {
+        return $this->values['send_name'];
+    }
+
+    /**
+     * 判断红包发送者名称 是否存在
+     * @return true 或 false
+     **/
+    public function IsSend_nameSet()
+    {
+        return array_key_exists('send_name', $this->values);
+    }
+
+    /**
+     * 设置商户订单号
+     * @param string $value
+     **/
+    public function SetMch_billno($value)
+    {
+        $this->values['mch_billno'] = $value;
+    }
+
+    /**
+     * 获取商户订单号
+     * @return
+     **/
+    public function GetMch_billno()
+    {
+        return $this->values['mch_billno'];
+    }
+
+    /**
+     * 判断商户订单号 是否存在
+     * @return true 或 false
+     **/
+    public function IsMch_billnoSet()
+    {
+        return array_key_exists('mch_billno', $this->values);
+    }
+
+    /**
+     * 设置付款金额
+     * @param string $value
+     **/
+    public function SetTotal_amount($value)
+    {
+        $this->values['total_amount'] = $value;
+    }
+
+    /**
+     * 获取付款金额
+     * @return
+     **/
+    public function GetTotal_amount()
+    {
+        return $this->values['total_amount'];
+    }
+
+    /**
+     * 判断付款金额 是否存在
+     * @return true 或 false
+     **/
+    public function IsTotal_amountSet()
+    {
+        return array_key_exists('total_amount', $this->values);
+    }
+
+    /**
+     * 设置红包发放总人数
+     * @param string $value
+     **/
+    public function SetTotal_num($value)
+    {
+        $this->values['total_num'] = $value;
+    }
+
+    /**
+     * 获取红包发放总人数
+     * @return
+     **/
+    public function GetTotal_num()
+    {
+        return $this->values['total_num'];
+    }
+
+    /**
+     * 判断红包发放总人数 是否存在
+     * @return true 或 false
+     **/
+    public function IsTotal_numSet()
+    {
+        return array_key_exists('total_num', $this->values);
+    }
+
+    /**
+     * 设置红包祝福语
+     * @param string $value
+     **/
+    public function SetWishing($value)
+    {
+        $this->values['wishing'] = $value;
+    }
+
+    /**
+     * 获取红包祝福语
+     * @return
+     **/
+    public function GetWishing()
+    {
+        return $this->values['wishing'];
+    }
+
+    /**
+     * 判断红包祝福语 是否存在
+     * @return true 或 false
+     **/
+    public function IsWishingSet()
+    {
+        return array_key_exists('wishing', $this->values);
+    }
+
+    /**
+     * 设置红包祝福语
+     * @param string $value
+     **/
+    public function SetAct_name($value)
+    {
+        $this->values['act_name'] = $value;
+    }
+
+    /**
+     * 获取红包祝福语
+     * @return
+     **/
+    public function GetAct_name()
+    {
+        return $this->values['act_name'];
+    }
+
+    /**
+     * 判断红包祝福语 是否存在
+     * @return true 或 false
+     **/
+    public function IsAct_nameSet()
+    {
+        return array_key_exists('act_name', $this->values);
+    }
+
+    /**
+     * 设置备注信息
+     * @param string $value
+     **/
+    public function SetRemark($value)
+    {
+        $this->values['remark'] = $value;
+    }
+
+    /**
+     * 获取备注信息
+     * @return
+     **/
+    public function GetRemark()
+    {
+        return $this->values['remark'];
+    }
+
+    /**
+     * 判断备注信息 是否存在
+     * @return true 或 false
+     **/
+    public function IsRemarkSet()
+    {
+        return array_key_exists('remark', $this->values);
+    }
+
+    /**
+     * 设置场景id
+     * @param string $value
+     **/
+    public function SetScene_id($value)
+    {
+        $this->values['scene_id'] = $value;
+    }
+
+    /**
+     * 获取场景id
+     * @return
+     **/
+    public function GetScene_id()
+    {
+        return $this->values['scene_id'];
+    }
+
+    /**
+     * 判断场景id 是否存在
+     * @return true 或 false
+     **/
+    public function IsScene_idSet()
+    {
+        return array_key_exists('scene_id', $this->values);
+    }
+
+    /**
+     * 设置活动信息
+     * @param string $value
+     **/
+    public function SetRisk_info($value)
+    {
+        $this->values['risk_info'] = $value;
+    }
+
+    /**
+     * 获取活动信息
+     * @return
+     **/
+    public function GetRisk_info()
+    {
+        return $this->values['risk_info'];
+    }
+
+    /**
+     * 判断活动信息 是否存在
+     * @return true 或 false
+     **/
+    public function IsRisk_infoSet()
+    {
+        return array_key_exists('risk_info', $this->values);
+    }
+
+    /**
+     * 设置资金授权商户号
+     * @param string $value
+     **/
+    public function SetConsume_mch_id($value)
+    {
+        $this->values['consume_mch_id'] = $value;
+    }
+
+    /**
+     * 获取资金授权商户号
+     * @return
+     **/
+    public function GetConsume_mch_id()
+    {
+        return $this->values['consume_mch_id'];
+    }
+
+    /**
+     * 判断资金授权商户号 是否存在
+     * @return true 或 false
+     **/
+    public function IsConsume_mch_idSet()
+    {
+        return array_key_exists('consume_mch_id', $this->values);
+    }
+}
+
+/**
+ * 微信红包记录查询
+ */
+class WxPayRedPackQuery extends WxPayDataBase
+{
+    /**
+     * 设置微信分配的公众账号ID
+     * @param string $value
+     **/
+    public function SetWxappid($value)
+    {
+        $this->values['wxappid'] = $value;
+    }
+
+    /**
+     * 获取微信分配的公众账号ID的值
+     * @return
+     **/
+    public function GetWxappid()
+    {
+        return $this->values['wxappid'];
+    }
+
+    /**
+     * 判断微信分配的公众账号ID是否存在
+     * @return boolean
+     **/
+    public function IsWxappidSet()
+    {
+        return array_key_exists('wxappid', $this->values);
+    }
+
+
+    /**
+     * 设置微信支付分配的商户号
+     * @param string $value
+     **/
+    public function SetMch_id($value)
+    {
+        $this->values['mch_id'] = $value;
+    }
+
+    /**
+     * 获取微信支付分配的商户号的值
+     * @return
+     **/
+    public function GetMch_id()
+    {
+        return $this->values['mch_id'];
+    }
+
+    /**
+     * 判断微信支付分配的商户号是否存在
+     * @return bool
+     **/
+    public function IsMch_idSet()
+    {
+        return array_key_exists('mch_id', $this->values);
+    }
+
+    /**
+     * 设置随机字符串
+     * @param string $value
+     **/
+    public function SetNonce_str($value)
+    {
+        $this->values['nonce_str'] = $value;
+    }
+
+    /**
+     * 获取随机字符串的值
+     * @return
+     **/
+    public function GetNonce_str()
+    {
+        return $this->values['nonce_str'];
+    }
+
+    /**
+     * 判断随机字符串是否存在
+     * @return bool
+     **/
+    public function IsNonce_strSet()
+    {
+        return array_key_exists('nonce_str', $this->values);
+    }
+
+    /**
+     * 设置商户订单号
+     * @param string $value
+     **/
+    public function SetMch_billno($value)
+    {
+        $this->values['mch_billno'] = $value;
+    }
+
+    /**
+     * 获取商户订单号
+     * @return
+     **/
+    public function GetMch_billno()
+    {
+        return $this->values['mch_billno'];
+    }
+
+    /**
+     * 判断商户订单号 是否存在
+     * @return true 或 false
+     **/
+    public function IsMch_billnoSet()
+    {
+        return array_key_exists('mch_billno', $this->values);
+    }
+
+    /**
+     * 设置订单类型
+     * @param string $value
+     **/
+    public function SetBill_type($value)
+    {
+        $this->values['bill_type'] = $value;
+    }
+
+    /**
+     * 获取订单类型
+     * @return
+     **/
+    public function GetBill_type()
+    {
+        return $this->values['bill_type'];
+    }
+
+    /**
+     * 判断订单类型 是否存在
+     * @return true 或 false
+     **/
+    public function IsBill_typeSet()
+    {
+        return array_key_exists('bill_type', $this->values);
+    }
+}
+
+/**
+ * 微信企业付款回调回包数据基类
+ **/
+class WxPayTransferResults extends WxPayResults
+{
+    /**
+     * 将xml转为array
+     * @param WxPayConfigInterface $config  配置对象
+     * @param string $xml
+     * @return bool|array
+     * @throws WxPayException
+     */
+    public static function Init($config, $xml)
+    {
+        $obj = new self();
+        $obj->FromXml($xml);
+        //失败则直接返回失败
+        if($obj->values['return_code'] != 'SUCCESS') {
+            foreach ($obj->values as $key => $value) {
+                #除了return_code和return_msg之外其他的参数存在，则报错
+                if($key != "return_code" && $key != "return_msg"){
+                    throw new WxPayException("输入数据存在异常！");
+                }
+            }
+            return $obj->GetValues();
+        }
+        return $obj->GetValues();
+    }
+}
+
+/**
+ * 微信企业付款
+ */
+class WxPayTransfer extends WxPayDataBase
+{
+    /**
+     * 设置微信支付分配的商户号
+     * @param string $value
+     **/
+    public function SetMchid($value)
+    {
+        $this->values['mchid'] = $value;
+    }
+    /**
+     * 获取微信支付分配的商户号的值
+     * @return 值
+     **/
+    public function GetMchid()
+    {
+        return $this->values['mchid'];
+    }
+    /**
+     * 判断微信支付分配的商户号是否存在
+     * @return true 或 false
+     **/
+    public function IsMchidSet()
+    {
+        return array_key_exists('mchid', $this->values);
+    }
+
+    /**
+     * 设置商户订单号
+     * @param string $value
+     **/
+    public function SetPartner_trade_no($value)
+    {
+        $this->values['partner_trade_no'] = $value;
+    }
+    /**
+     * 获取商户订单号的值
+     * @return 值
+     **/
+    public function GetPartner_trade_no()
+    {
+        return $this->values['partner_trade_no'];
+    }
+    /**
+     * 判断微商户订单号是否存在
+     * @return true 或 false
+     **/
+    public function IsPartner_trade_noSet()
+    {
+        return array_key_exists('partner_trade_no', $this->values);
+    }
+
+    /**
+     * 设置用户的Openid。
+     * @param string $value
+     **/
+    public function SetOpenid($value)
+    {
+        $this->values['openid'] = $value;
+    }
+    /**
+     * 获取用户的Openid的值
+     * @return 值
+     **/
+    public function GetOpenid()
+    {
+        return $this->values['openid'];
+    }
+    /**
+     * 判断用户的Openid是否存在
+     * @return true 或 false
+     **/
+    public function IsOpenidSet()
+    {
+        return array_key_exists('openid', $this->values);
+    }
+
+    /**
+     * 设置企业付款金额
+     * @param string $value
+     **/
+    public function SetAmount($value)
+    {
+        $this->values['amount'] = $value;
+    }
+    /**
+     * 获取企业付款金额的值
+     * @return 值
+     **/
+    public function GetAmount()
+    {
+        return $this->values['amount'];
+    }
+    /**
+     * 判断企业付款金额是否存在
+     * @return true 或 false
+     **/
+    public function IsAmountSet()
+    {
+        return array_key_exists('amount', $this->values);
+    }
+
+    /**
+     * 设置校验用户姓名选项
+     * @param string $value
+     **/
+    public function SetCheck_name($value)
+    {
+        $this->values['check_name'] = $value;
+    }
+    /**
+     * 获取校验用户姓名选项的值
+     * @return 值
+     **/
+    public function GetCheck_name()
+    {
+        return $this->values['check_name'];
+    }
+    /**
+     * 判断校验用户姓名选项是否存在
+     * @return true 或 false
+     **/
+    public function IsCheck_nameSet()
+    {
+        return array_key_exists('check_name', $this->values);
+    }
+
+    /**
+     * 设置收款用户姓名选项
+     * @param string $value
+     **/
+    public function SetRe_user_name($value)
+    {
+        $this->values['re_user_name'] = $value;
+    }
+    /**
+     * 获取收款用户姓名选项的值
+     * @return 值
+     **/
+    public function GetRe_user_name()
+    {
+        return $this->values['re_user_name'];
+    }
+    /**
+     * 判断收款用户姓名是否存在
+     * @return true 或 false
+     **/
+    public function IsRe_user_nameSet()
+    {
+        return array_key_exists('re_user_name', $this->values);
+    }
+
+    /**
+     * 设置微信分配的公众账号ID
+     * @param string $value
+     **/
+    public function SetMch_appid($value)
+    {
+        $this->values['mch_appid'] = $value;
+    }
+    /**
+     * 获取微信分配的公众账号ID的值
+     * @return 值
+     **/
+    public function GetMch_appid()
+    {
+        return $this->values['mch_appid'];
+    }
+    /**
+     * 判断微信分配的公众账号ID是否存在
+     * @return true 或 false
+     **/
+    public function IsMch_appidSet()
+    {
+        return array_key_exists('mch_appid', $this->values);
+    }
+
+    /**
+     * 设置APP和网页支付提交用户端ip，Native支付填调用微信支付API的机器IP。
+     * @param string $value
+     **/
+    public function SetSpbill_create_ip($value)
+    {
+        $this->values['spbill_create_ip'] = $value;
+    }
+    /**
+     * 获取APP和网页支付提交用户端ip，Native支付填调用微信支付API的机器IP。的值
+     * @return 值
+     **/
+    public function GetSpbill_create_ip()
+    {
+        return $this->values['spbill_create_ip'];
+    }
+    /**
+     * 判断APP和网页支付提交用户端ip，Native支付填调用微信支付API的机器IP。是否存在
+     * @return true 或 false
+     **/
+    public function IsSpbill_create_ipSet()
+    {
+        return array_key_exists('spbill_create_ip', $this->values);
+    }
+
+    /**
+     * 设置随机字符串，不长于32位。推荐随机数生成算法
+     * @param string $value
+     **/
+    public function SetNonce_str($value)
+    {
+        $this->values['nonce_str'] = $value;
+    }
+    /**
+     * 获取随机字符串，不长于32位。推荐随机数生成算法的值
+     * @return 值
+     **/
+    public function GetNonce_str()
+    {
+        return $this->values['nonce_str'];
+    }
+    /**
+     * 判断随机字符串，不长于32位。推荐随机数生成算法是否存在
+     * @return true 或 false
+     **/
+    public function IsNonce_strSet()
+    {
+        return array_key_exists('nonce_str', $this->values);
+    }
+}
+
+/**
+ * 微信企业付款查询
+ */
+class WxPayTransferQuery extends WxPayDataBase
+{
+    /**
+     * 设置微信支付分配的商户号
+     * @param string $value
+     **/
+    public function SetMch_id($value)
+    {
+        $this->values['mch_id'] = $value;
+    }
+    /**
+     * 获取微信支付分配的商户号的值
+     * @return 值
+     **/
+    public function GetMch_id()
+    {
+        return $this->values['mch_id'];
+    }
+    /**
+     * 判断微信支付分配的商户号是否存在
+     * @return true 或 false
+     **/
+    public function IsMch_idSet()
+    {
+        return array_key_exists('mch_id', $this->values);
+    }
+
+    /**
+     * 设置商户订单号
+     * @param string $value
+     **/
+    public function SetPartner_trade_no($value)
+    {
+        $this->values['partner_trade_no'] = $value;
+    }
+    /**
+     * 获取商户订单号的值
+     * @return 值
+     **/
+    public function GetPartner_trade_no()
+    {
+        return $this->values['partner_trade_no'];
+    }
+    /**
+     * 判断微商户订单号是否存在
+     * @return true 或 false
+     **/
+    public function IsPartner_trade_noSet()
+    {
+        return array_key_exists('partner_trade_no', $this->values);
+    }
+
+    /**
+     * 设置微信分配的公众账号ID
+     * @param string $value
+     **/
+    public function SetAppid($value)
+    {
+        $this->values['appid'] = $value;
+    }
+    /**
+     * 获取微信分配的公众账号ID的值
+     * @return 值
+     **/
+    public function GetAppid()
+    {
+        return $this->values['appid'];
+    }
+    /**
+     * 判断微信分配的公众账号ID是否存在
+     * @return true 或 false
+     **/
+    public function IsAppidSet()
+    {
+        return array_key_exists('appid', $this->values);
+    }
+}

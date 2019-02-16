@@ -309,6 +309,170 @@ class WxPayApi
 		
 		return $result;
 	}
+
+	/**
+     * 发放普通红包
+     * @param $config
+     * @param $inputObj
+     * @param int $timeOut
+     * @return array|bool
+     * @throws WxPayException
+     */
+    public static function sendRedPack($config, $inputObj, $timeOut = 6)
+    {
+        $url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/sendredpack";
+
+        //检测必填参数
+        if(!$inputObj->IsMch_billnoSet()) {
+            throw new WxPayException("缺少发放普通红包接口必填参数mch_billno！");
+        } elseif (!$inputObj->IsSend_nameSet()){
+            throw new WxPayException("缺少发放普通红包接口必填参数send_name！");
+        } elseif (!$inputObj->IsRe_openidSet()) {
+            throw new WxPayException("缺少发放普通红包接口必填参数re_openid！");
+        } elseif (!$inputObj->IsTotal_amountSet()) {
+            throw new WxPayException("缺少发放普通红包接口必填参数total_amount！");
+        } elseif (!$inputObj->IsWishingSet()) {
+            throw new WxPayException("缺少发放普通红包接口必填参数wishing！");
+        } elseif (!$inputObj->IsAct_nameSet()) {
+            throw new WxPayException("缺少发放普通红包接口必填参数act_name！");
+        } elseif (!$inputObj->IsRemarkSet()) {
+            throw new WxPayException("缺少发放普通红包接口必填参数remark！");
+        }
+
+        //关联参数
+        if (($inputObj->GeTotal_amountSet() < 100 || $inputObj->GeTotal_amountSet() > 20000) && !$inputObj->IsScene_idSet()){
+            throw new WxPayException("发放普通红包接口中，缺少必填参数scene_id！红包金额大于200或者小于1元时， scene_id为必填参数！");
+        }
+
+        $inputObj->SetWxappid($config->GetAppId());//公众账号ID
+        $inputObj->SetMch_id($config->GetMerchantId());//商户号
+        $inputObj->SetNonce_str(self::getNonceStr());//随机字符串
+        $inputObj->SetClient_ip(self::getServerIp());//设置调用接口的机器Ip地址
+
+        $inputObj->SetSign($config);//签名
+        $xml = $inputObj->ToXml();
+
+        $startTimeStamp = self::getMillisecond();//请求开始时间
+        $response = self::postXmlCurl($config, $xml, $url, true, $timeOut);
+        $result = WxPayRedPackResults::Init($config, $response);
+        self::reportCostTime($config, $url, $startTimeStamp, $result);//上报请求花费时间
+
+        return $result;
+    }
+
+    /**
+     * 红包记录查询
+     * @param $config
+     * @param $inputObj
+     * @param int $timeOut
+     * @return array|bool
+     * @throws WxPayException
+     */
+    public static function redPackQuery($config, $inputObj, $timeOut = 6)
+    {
+        $url = 'https://api.mch.weixin.qq.com/mmpaymkttransfers/gethbinfo';
+
+        //检测必填参数
+        if (!$inputObj->IsMch_billnoSet()) {
+            throw new WxPayException("红包记录查询接口中，mch_billno必填！");
+        }
+
+        if (!$inputObj->IsBill_typeSet()) {
+            $inputObj->SetBill_type('MCHT');
+        }
+        $inputObj->SetAppid($config->GetAppId());//公众账号ID
+        $inputObj->SetMch_id($config->GetMerchantId());//商户号
+        $inputObj->SetNonce_str(self::getNonceStr());//随机字符串
+
+        $inputObj->SetSign($config);//签名
+        $xml = $inputObj->ToXml();
+
+        $startTimeStamp = self::getMillisecond();//请求开始时间
+        $response = self::postXmlCurl($config, $xml, $url, true, $timeOut);
+        $result = WxPayRedPackResults::Init($config, $response);
+        self::reportCostTime($config, $url, $startTimeStamp, $result);//上报请求花费时间
+
+        return $result;
+    }
+
+    /**
+     * 企业付款
+     * @param $config
+     * @param $inputObj
+     * @param int $timeOut
+     * @return array|bool
+     * @throws WxPayException
+     */
+    public static function transfer($config, $inputObj, $timeOut = 6)
+    {
+        $url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers";
+        //检测必填参数
+        if (!$inputObj->IsPartner_trade_noSet()) {
+            throw new WxPayException("缺少企业付款接口必填参数partner_trade_no！");
+        } elseif (!$inputObj->IsOpenidSet()){
+            throw new WxPayException("缺少企业付款接口必填参数openid！");
+        } elseif (!$inputObj->IsAmountSet()) {
+            throw new WxPayException("缺少企业付款接口必填参数amount！");
+        }
+
+        //关联参数
+        if ($inputObj->IsCheck_nameSet() && $inputObj->GetCheck_name() == "FORCE_CHECK" && !$inputObj->IsRe_user_nameSet()){
+            throw new WxPayException("企业付款口中，缺少必填参数re_user_name！check_name为FORCE_CHECK时，re_user_name为必填参数！");
+        }
+
+        if (!$inputObj->IsCheck_nameSet()) {
+            $inputObj->SetCheck_name('NO_CHECK');
+        }
+
+        $inputObj->SetMch_appid($config->GetAppId());//公众账号ID
+        $inputObj->SetMchId($config->GetMerchantId());//商户号
+        $inputObj->SetSpbill_create_ip($_SERVER['REMOTE_ADDR']);//终端ip
+        $inputObj->SetNonce_str(self::getNonceStr());//随机字符串
+
+        //签名
+        $inputObj->SetSign($config);
+        $xml = $inputObj->ToXml();
+
+        $startTimeStamp = self::getMillisecond();//请求开始时间
+        $response = self::postXmlCurl($config, $xml, $url, false, $timeOut);
+        $result = WxPayTransferResults::Init($config, $response);
+        self::reportCostTime($config, $url, $startTimeStamp, $result);//上报请求花费时间
+
+        return $result;
+    }
+
+    /**
+     * 企业付款查询
+     * @param $config
+     * @param $inputObj
+     * @param int $timeOut
+     * @return array|bool
+     * @throws WxPayException
+     */
+    public static function transferQuery($config, $inputObj, $timeOut = 6)
+    {
+        $url = "https://api.mch.weixin.qq.com/mmpaymkttransfers/gettransferinfo";
+
+        //检测必填参数
+        if (!$inputObj->IsPartner_trade_noSet()) {
+            throw new WxPayException("缺少企业付款查询接口必填参数partner_trade_no！");
+        }
+
+        $inputObj->SetAppid($config->GetAppId());//公众账号ID
+        $inputObj->SetMch_id($config->GetMerchantId());//商户号
+        $inputObj->SetNonce_str(self::getNonceStr());//随机字符串
+
+        //签名
+        $inputObj->SetSign($config);
+        $xml = $inputObj->ToXml();
+
+        $startTimeStamp = self::getMillisecond();//请求开始时间
+        $response = self::postXmlCurl($config, $xml, $url, false, $timeOut);
+        $result = WxPayTransferResults::Init($config, $response);
+        self::reportCostTime($config, $url, $startTimeStamp, $result);//上报请求花费时间
+
+        return $result;
+    }
 	
 	/**
 	 * 
