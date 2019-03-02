@@ -288,7 +288,7 @@ class WxPayResults extends WxPayDataBase
 				#除了return_code和return_msg之外其他的参数存在，则报错
 				if($key != "return_code" && $key != "return_msg"){
 					throw new WxPayException("输入数据存在异常！");
-					return false;
+					//return false;
 				}
 			}
 			return $obj->GetValues();
@@ -2965,7 +2965,7 @@ class WxPayJsApiPay extends WxPayDataBase
  */
 class WxPayBizPayUrl extends WxPayDataBaseSignMd5
 {
-		/**
+    /**
 	* 设置微信分配的公众账号ID
 	* @param string $value 
 	**/
@@ -3124,8 +3124,10 @@ class WxPayRedPackResults extends WxPayResults
 
 /**
  * 微信红包
+ * @author jsyzchenchen@gmail.com
+ * @date 2018/12/24
  */
-class WxPayRedPack extends WxPayDataBase
+class WxPaySendRedPack extends WxPayDataBaseSignMd5
 {
 
     /**
@@ -3537,34 +3539,36 @@ class WxPayRedPack extends WxPayDataBase
 
 /**
  * 微信红包记录查询
+ * @author jsyzchenchen@gmail.com
+ * @date 2018/12/26
  */
-class WxPayRedPackQuery extends WxPayDataBase
+class WxPayRedPackQuery extends WxPayDataBaseSignMd5
 {
     /**
      * 设置微信分配的公众账号ID
      * @param string $value
      **/
-    public function SetWxappid($value)
+    public function SetAppid($value)
     {
-        $this->values['wxappid'] = $value;
+        $this->values['appid'] = $value;
     }
 
     /**
      * 获取微信分配的公众账号ID的值
      * @return
      **/
-    public function GetWxappid()
+    public function GetAppid()
     {
-        return $this->values['wxappid'];
+        return $this->values['appid'];
     }
 
     /**
      * 判断微信分配的公众账号ID是否存在
      * @return boolean
      **/
-    public function IsWxappidSet()
+    public function IsAppidSet()
     {
-        return array_key_exists('wxappid', $this->values);
+        return array_key_exists('appid', $this->values);
     }
 
 
@@ -3709,8 +3713,10 @@ class WxPayTransferResults extends WxPayResults
 
 /**
  * 微信企业付款
+ * @author jsyzchenchen@gmail.com
+ * @date 2018/02/15
  */
-class WxPayTransfer extends WxPayDataBase
+class WxPayTransfer extends WxPayDataBaseSignMd5
 {
     /**
      * 设置微信支付分配的商户号
@@ -3936,12 +3942,39 @@ class WxPayTransfer extends WxPayDataBase
     {
         return array_key_exists('nonce_str', $this->values);
     }
+
+    /**
+     * 设置企业付款备注
+     * @param string $value
+     **/
+    public function SetDesc($value)
+    {
+        $this->values['desc'] = $value;
+    }
+    /**
+     * 获取企业付款备注的值
+     * @return 值
+     **/
+    public function GetDesc()
+    {
+        return $this->values['desc'];
+    }
+    /**
+     * 判断企业付款备注是否存在
+     * @return true 或 false
+     **/
+    public function IsDescSet()
+    {
+        return array_key_exists('desc', $this->values);
+    }
 }
 
 /**
  * 微信企业付款查询
+ * @author jsyzchenchen@gmail.com
+ * @date 2018/02/15
  */
-class WxPayTransferQuery extends WxPayDataBase
+class WxPayTransferQuery extends WxPayDataBaseSignMd5
 {
     /**
      * 设置微信支付分配的商户号
@@ -4016,5 +4049,30 @@ class WxPayTransferQuery extends WxPayDataBase
     public function IsAppidSet()
     {
         return array_key_exists('appid', $this->values);
+    }
+
+    /**
+     * 设置随机字符串，不长于32位。推荐随机数生成算法
+     * @param string $value
+     **/
+    public function SetNonce_str($value)
+    {
+        $this->values['nonce_str'] = $value;
+    }
+    /**
+     * 获取随机字符串，不长于32位。推荐随机数生成算法的值
+     * @return 值
+     **/
+    public function GetNonce_str()
+    {
+        return $this->values['nonce_str'];
+    }
+    /**
+     * 判断随机字符串，不长于32位。推荐随机数生成算法是否存在
+     * @return true 或 false
+     **/
+    public function IsNonce_strSet()
+    {
+        return array_key_exists('nonce_str', $this->values);
     }
 }

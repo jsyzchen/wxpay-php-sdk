@@ -310,13 +310,15 @@ class WxPayApi
 		return $result;
 	}
 
-	/**
+    /**
      * 发放普通红包
      * @param $config
      * @param $inputObj
      * @param int $timeOut
      * @return array|bool
      * @throws WxPayException
+     * @author jsyzchenchen@gmail.com
+     * @date 2018/12/26
      */
     public static function sendRedPack($config, $inputObj, $timeOut = 6)
     {
@@ -340,7 +342,7 @@ class WxPayApi
         }
 
         //关联参数
-        if (($inputObj->GeTotal_amountSet() < 100 || $inputObj->GeTotal_amountSet() > 20000) && !$inputObj->IsScene_idSet()){
+        if (($inputObj->GetTotal_amount() < 100 || $inputObj->GetTotal_amount() > 20000) && !$inputObj->IsScene_idSet()){
             throw new WxPayException("发放普通红包接口中，缺少必填参数scene_id！红包金额大于200或者小于1元时， scene_id为必填参数！");
         }
 
@@ -413,6 +415,8 @@ class WxPayApi
             throw new WxPayException("缺少企业付款接口必填参数openid！");
         } elseif (!$inputObj->IsAmountSet()) {
             throw new WxPayException("缺少企业付款接口必填参数amount！");
+        } elseif (!$inputObj->IsDescSet()) {
+            throw new WxPayException("缺少企业付款接口必填参数desc！");
         }
 
         //关联参数
@@ -425,7 +429,7 @@ class WxPayApi
         }
 
         $inputObj->SetMch_appid($config->GetAppId());//公众账号ID
-        $inputObj->SetMchId($config->GetMerchantId());//商户号
+        $inputObj->SetMchid($config->GetMerchantId());//商户号
         $inputObj->SetSpbill_create_ip($_SERVER['REMOTE_ADDR']);//终端ip
         $inputObj->SetNonce_str(self::getNonceStr());//随机字符串
 
@@ -434,7 +438,7 @@ class WxPayApi
         $xml = $inputObj->ToXml();
 
         $startTimeStamp = self::getMillisecond();//请求开始时间
-        $response = self::postXmlCurl($config, $xml, $url, false, $timeOut);
+        $response = self::postXmlCurl($config, $xml, $url, true, $timeOut);
         $result = WxPayTransferResults::Init($config, $response);
         self::reportCostTime($config, $url, $startTimeStamp, $result);//上报请求花费时间
 
@@ -467,13 +471,13 @@ class WxPayApi
         $xml = $inputObj->ToXml();
 
         $startTimeStamp = self::getMillisecond();//请求开始时间
-        $response = self::postXmlCurl($config, $xml, $url, false, $timeOut);
+        $response = self::postXmlCurl($config, $xml, $url, true, $timeOut);
         $result = WxPayTransferResults::Init($config, $response);
         self::reportCostTime($config, $url, $startTimeStamp, $result);//上报请求花费时间
 
         return $result;
     }
-	
+
 	/**
 	 * 
 	 * 测速上报，该方法内部封装在report中，使用时请注意异常流程
@@ -603,10 +607,9 @@ class WxPayApi
 	}
 	
 	/**
-	 * 
 	 * 产生随机字符串，不长于32位
 	 * @param int $length
-	 * @return 产生的随机字符串
+	 * @return string
 	 */
 	public static function getNonceStr($length = 32) 
 	{
@@ -721,15 +724,20 @@ class WxPayApi
 			curl_setopt($ch,CURLOPT_PROXY, $proxyHost);
 			curl_setopt($ch,CURLOPT_PROXYPORT, $proxyPort);
 		}
+        if (stripos($url,"https://") !== false) {
+		    //目前环境没有CA证书，暂时关闭验证对等证书，下载地址：https://curl.haxx.se/docs/caextract.html
+            //curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,true);
+            //curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,2);//严格校验
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 1);
+        }
 		curl_setopt($ch,CURLOPT_URL, $url);
-		curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,TRUE);
-		curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,2);//严格校验
-		curl_setopt($ch,CURLOPT_USERAGENT, $ua); 
+		curl_setopt($ch,CURLOPT_USERAGENT, $ua);
 		//设置header
 		curl_setopt($ch, CURLOPT_HEADER, FALSE);
 		//要求结果为字符串且输出到屏幕上
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-	
+
 		if($useCert == true){
 			//设置证书
 			//使用证书：cert 与 key 分别属于两个.pem文件
@@ -770,5 +778,21 @@ class WxPayApi
 		$time = $time2[0];
 		return $time;
 	}
-}
 
+    /**
+     * Get current server ip
+     * @return string
+     */
+    public static function getServerIp()
+    {
+        if (!empty($_SERVER['SERVER_ADDR'])) {
+            $ip = $_SERVER['SERVER_ADDR'];
+        } elseif (!empty($_SERVER['SERVER_NAME'])) {
+            $ip = gethostbyname($_SERVER['SERVER_NAME']);
+        } else {
+            // for php-cli(phpunit etc.)
+            $ip = defined('PHPUNIT_RUNNING') ? '127.0.0.1' : gethostbyname(gethostname());
+        }
+        return filter_var($ip, FILTER_VALIDATE_IP) ?: '127.0.0.1';
+    }
+}
